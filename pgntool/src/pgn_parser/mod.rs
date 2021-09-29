@@ -9,14 +9,21 @@ trait GrammarNode {
         Self: Sized;
 }
 
+mod element;
+mod element_sequence;
 mod game_termination;
-mod pgn_database;
-pub use pgn_database::PgnDatabase;
+mod move_number_indication;
 mod movetext_section;
+mod numeric_annotation_glyph;
+mod pgn_database;
 mod pgn_game;
+mod recursive_variation;
+mod san_move;
 mod symbol;
 mod tag_pair;
 mod tag_section;
+
+pub use pgn_database::PgnDatabase;
 
 pub fn parse_pgn(s: impl AsRef<str>) -> Result<PgnDatabase> {
     let s = s.as_ref().trim_start();

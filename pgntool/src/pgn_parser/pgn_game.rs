@@ -28,12 +28,12 @@ impl GrammarNode for PgnGame {
 
         let s = s.trim_start();
 
-        //let (movetext_section, s) = MovetextSection::parse(s)?;
+        let (movetext_section, s) = MovetextSection::parse(s)?;
 
         Ok((
             PgnGame {
                 tag_section,
-                movetext_section: MovetextSection{},  // TODO: write this.
+                movetext_section,
             },
             s,
         ))
