@@ -12,12 +12,7 @@ pub struct Square {
 
 impl Debug for Square {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            ('a' as u8 + self.file.0 - 1) as char,
-            self.rank.0
-        )
+        write!(f, "{}{}", (b'a' + self.file.0 - 1) as char, self.rank.0)
     }
 }
 
@@ -47,7 +42,7 @@ impl GrammarNode for Square {
 }
 
 #[cfg(test)]
-mod square {
+mod test {
     use super::*;
     use crate::assert_with_tail;
 

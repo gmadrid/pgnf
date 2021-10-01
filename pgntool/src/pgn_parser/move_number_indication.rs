@@ -26,7 +26,7 @@ impl GrammarNode for MoveNumberIndication {
         let mut iter = put_back(s.chars().enumerate());
 
         let (num_part, first_non_num): (&str, _) =
-            if let Some((idx, ch)) = iter.find(|(idx, ch)| !ch.is_ascii_digit()) {
+            if let Some((idx, ch)) = iter.find(|(_, ch)| !ch.is_ascii_digit()) {
                 iter.put_back((idx, ch));
                 (&s[..idx], idx)
             } else {
@@ -37,7 +37,7 @@ impl GrammarNode for MoveNumberIndication {
         // TODO: deal with spaces between periods?
         // TODO: clean up input?
 
-        let first_non_period = if let Some((idx, _)) = iter.find(|(_, ch)| !(*ch == '.')) {
+        let first_non_period = if let Some((idx, _)) = iter.find(|(_, ch)| *ch != '.') {
             idx
         } else {
             s.len()

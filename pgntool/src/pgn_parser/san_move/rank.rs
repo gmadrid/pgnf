@@ -7,10 +7,10 @@ pub struct Rank(pub u8);
 impl Rank {
     pub fn from_number(s: &str) -> Option<Rank> {
         if let Some(ch) = s.chars().next() {
-            if ch < '1' || ch > '8' {
+            if !('1'..='8').contains(&ch) {
                 None
             } else {
-                Some(Rank((ch as u8) - ('1' as u8) + 1))
+                Some(Rank((ch as u8) - b'1' + 1))
             }
         } else {
             None
@@ -26,13 +26,13 @@ impl Debug for Rank {
 
 impl From<char> for Rank {
     fn from(ch: char) -> Self {
-        Rank(ch as u8 - '1' as u8 + 1)
+        Rank(ch as u8 - b'1' + 1)
     }
 }
 
 impl GrammarNode for Rank {
     fn check_start(s: &str) -> bool {
-        s.starts_with(|ch: char| ch >= '1' && ch <= '8')
+        s.starts_with(|ch: char| ('1'..='8').contains(&ch))
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>

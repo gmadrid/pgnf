@@ -1,7 +1,5 @@
-use disambiguation::Disambiguation::SquareCoord;
 use file::File;
 use piece::Piece;
-use piece::Piece::{Bishop, Knight, Pawn, Queen, Rook};
 use rank::Rank;
 use square::Square;
 
@@ -43,12 +41,10 @@ fn first<T, U>(param: (T, U)) -> T {
 impl SanMove {
     fn parse_castle(s: &str) -> crate::Result<(Self, &str)> {
         // Check for Long Castle first because short castle is a prefix of long castle.
-        if s.starts_with("O-O-O") {
-            let s = &s["O-O-O".len()..];
+        if let Some(s) = s.strip_prefix("O-O-O") {
             let (check, s) = Check::parse(s).unwrap_or((Check::None, s));
             Ok((SanMove::LongCastle(check), s))
-        } else if s.starts_with("O-O") {
-            let s = &s["O-O".len()..];
+        } else if let Some(s) = s.strip_prefix("O-O") {
             let (check, s) = Check::parse(s).unwrap_or((Check::None, s));
             Ok((SanMove::ShortCastle(check), s))
         } else {
@@ -116,7 +112,10 @@ impl SanMove {
 */
 impl GrammarNode for SanMove {
     fn check_start(s: &str) -> bool {
-        PieceSpec::check_start(s) || Capture::check_start(s) || Square::check_start(s) || s.starts_with("O")
+        PieceSpec::check_start(s)
+            || Capture::check_start(s)
+            || Square::check_start(s)
+            || s.starts_with('O')
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>
@@ -134,7 +133,6 @@ impl GrammarNode for SanMove {
         } else {
             None
         };
-        (&capture_pair, s);
 
         let s = capture_pair
             .as_ref()
@@ -144,7 +142,7 @@ impl GrammarNode for SanMove {
         let (destination, s) = if Square::check_start(s) {
             Square::parse(s)?
         } else {
-            Err(PgnError::InvalidCheckChar('X'))?
+            return Err(PgnError::InvalidCheckChar('X'));
         };
 
         let check_pair = if Check::check_start(s) {
@@ -172,22 +170,6 @@ impl GrammarNode for SanMove {
         };
 
         Ok((SanMove::Move(detail), s))
-    }
-}
-
-pub fn if_some<T>(pred: bool, val: T) -> Option<T> {
-    if pred {
-        Some(val)
-    } else {
-        None
-    }
-}
-
-pub fn if_some_with<T>(pred: bool, f: impl FnOnce() -> T) -> Option<T> {
-    if pred {
-        Some(f())
-    } else {
-        None
     }
 }
 

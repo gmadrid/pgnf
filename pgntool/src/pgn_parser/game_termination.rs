@@ -16,14 +16,6 @@ pub enum GameTermination {
     Unfinished,
 }
 
-pub fn if_some<T>(pred: bool, val: T) -> Option<T> {
-    if pred {
-        Some(val)
-    } else {
-        None
-    }
-}
-
 pub fn if_some_with<T>(pred: bool, f: impl FnOnce() -> T) -> Option<T> {
     if pred {
         Some(f())

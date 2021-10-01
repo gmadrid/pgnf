@@ -1,4 +1,4 @@
-use crate::{PgnError, Result};
+use crate::Result;
 
 trait GrammarNode {
     // Returns true if the first character of the string is a valid first letter for the

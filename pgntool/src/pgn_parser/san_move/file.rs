@@ -7,10 +7,10 @@ pub struct File(pub u8);
 impl File {
     pub fn from_letter(s: &str) -> Option<File> {
         if let Some(ch) = s.chars().next() {
-            if ch < 'a' || ch > 'h' {
+            if !('a'..='h').contains(&ch) {
                 None
             } else {
-                Some(File((ch as u8) - ('a' as u8) + 1))
+                Some(File((ch as u8) - b'a' + 1))
             }
         } else {
             None
@@ -20,20 +20,20 @@ impl File {
 
 impl Debug for File {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}]", ('a' as u8 + self.0 - 1) as char)
+        write!(f, "[{}]", (b'a' + self.0 - 1) as char)
     }
 }
 
 impl From<char> for File {
     fn from(ch: char) -> Self {
         // TODO: should I panic here? .
-        File(ch as u8 - 'a' as u8 + 1)
+        File(ch as u8 - b'a' + 1)
     }
 }
 
 impl GrammarNode for File {
     fn check_start(s: &str) -> bool {
-        s.starts_with(|ch: char| ch >= 'a' && ch <= 'h')
+        s.starts_with(|ch: char| ('a'..='h').contains(&ch))
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>
