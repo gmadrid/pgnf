@@ -3,6 +3,7 @@ use toolpack::{spew_at_level, verbose}; // TODO: figure out how to eliminate use
 
 mod pgn_parser;
 pub use pgn_parser::{parse_pgn, PgnDatabase};
+use std::num::ParseIntError;
 
 #[derive(Debug, Error)]
 pub enum PgnError {
@@ -17,6 +18,12 @@ pub enum PgnError {
 
     #[error("Expected {0}, but found {1}.")]
     UnexpectedChar(char, char),
+
+    #[error("Unexpected character found while parsing Check: {0}")]
+    InvalidCheckChar(char),
+
+    #[error("{0}")]
+    ParseIntError(#[from] ParseIntError),
 
     #[error("{0}")]
     ToolPack(#[from] toolpack::TPError),

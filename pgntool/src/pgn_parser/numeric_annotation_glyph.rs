@@ -1,5 +1,6 @@
 use crate::pgn_parser::GrammarNode;
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct NumericAnnotationGlyph {}
 
 impl GrammarNode for NumericAnnotationGlyph {

@@ -1,9 +1,21 @@
 use crate::{PgnError, Result};
-use std::str::FromStr;
 
 trait GrammarNode {
-    // TODO: document these
+    // Returns true if the first character of the string is a valid first letter for the
+    // GrammarNode.
+    //
+    // - should not trim white space from the start of the string. (That is the caller's
+    //   responsibility.)
     fn check_start(s: &str) -> bool;
+
+    // Returns a parsed node and the 'tail' (the part of the string remaining after parsing
+    // the node).
+    //
+    // - should assume that check_start() has been called and returned 'true' on the string.
+    // - should not trim white space from the start of the string. (That is the caller's
+    //   responsibility.)
+    // - may trim white space from inside the parsed string.
+    // - should not trim trailing white space.
     fn parse(s: &str) -> Result<(Self, &str)>
     where
         Self: Sized;
