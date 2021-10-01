@@ -3,7 +3,7 @@ use crate::pgn_parser::GrammarNode;
 use crate::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
-struct Capture {
+pub struct Capture {
     pawn_file: Option<File>,
 }
 

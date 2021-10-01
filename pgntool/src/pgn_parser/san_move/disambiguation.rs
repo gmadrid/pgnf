@@ -2,6 +2,7 @@ use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::san_move::square::Square;
 use crate::pgn_parser::GrammarNode;
+use crate::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Disambiguation {
@@ -9,6 +10,20 @@ pub enum Disambiguation {
     RankNumber(Rank),
     SquareCoord(Square),
     None,
+}
+
+impl Disambiguation {
+    pub fn check_follow(s: &str) -> crate::Result<()> {
+        // Ironically, this is an ambiguous, context-sensitive parse.
+        // It *must* be followed by either 'x' or SQUARE.
+        // (Pawn captures never disambiguate, so PAWNFILE should always be empty.)
+        // You can use this "follow set" to check for a valid DISAMBIGUATION.
+        if s.starts_with('x') || Square::check_start(s) {
+            Ok(())
+        } else {
+            Err(PgnError::InvalidCheckChar('Q'))
+        }
+    }
 }
 
 impl From<File> for Disambiguation {
@@ -40,23 +55,25 @@ impl GrammarNode for Disambiguation {
         Self: Sized,
     {
         // Try to read the Square first, consuming two characters.
-        dbg!("FOOBAR");
-        if Square::check_start(dbg!(s)) {
+        if Square::check_start(s) {
             if let Ok((square, remaining)) = Square::parse(s) {
+                Self::check_follow(remaining)?;
                 return Ok((Self::from(square), remaining));
             }
         }
 
         // If the Square doesn't work, then it might be just a File.
-        if File::check_start(dbg!(s)) {
+        if File::check_start(s) {
             if let Ok((file, remaining)) = File::parse(s) {
+                Self::check_follow(remaining)?;
                 return Ok((Self::from(file), remaining));
             }
         }
 
         // Otherwise, it's just a Rank.
-        if Rank::check_start(dbg!(s)) {
+        if Rank::check_start(s) {
             if let Ok((rank, remaining)) = Rank::parse(s) {
+                Self::check_follow(remaining)?;
                 return Ok((Self::from(rank), remaining));
             }
         }
@@ -114,13 +131,13 @@ mod test {
 
     #[test]
     fn test_parse() {
-        assert_file_with_tail!('a', "TAIL", Disambiguation::parse("aTAIL"));
-        assert_file_with_tail!('d', " SPACE", Disambiguation::parse("d SPACE"));
+        assert_file_with_tail!('a', "xTAIL", Disambiguation::parse("axTAIL"));
+        assert_file_with_tail!('d', "x SPACE", Disambiguation::parse("dx SPACE"));
 
-        assert_rank_with_tail!('8', "TAIL", Disambiguation::parse("8TAIL"));
-        assert_rank_with_tail!('1', " SPACE", Disambiguation::parse("1 SPACE"));
+        assert_rank_with_tail!('8', "xTAIL", Disambiguation::parse("8xTAIL"));
+        assert_rank_with_tail!('1', "x SPACE", Disambiguation::parse("1x SPACE"));
 
-        assert_square_with_tail!('a', '8', "TAIL", Disambiguation::parse("a8TAIL"));
-        assert_square_with_tail!('c', '6', " SPACE", Disambiguation::parse("c6 SPACE"));
+        assert_square_with_tail!('a', '8', "xTAIL", Disambiguation::parse("a8xTAIL"));
+        assert_square_with_tail!('c', '6', "x SPACE", Disambiguation::parse("c6x SPACE"));
     }
 }

@@ -5,6 +5,9 @@ use piece::Piece::{Bishop, Knight, Pawn, Queen, Rook};
 use rank::Rank;
 use square::Square;
 
+use crate::pgn_parser::san_move::capture::Capture;
+use crate::pgn_parser::san_move::check::Check;
+use crate::pgn_parser::san_move::piecespec::PieceSpec;
 use crate::pgn_parser::GrammarNode;
 use crate::PgnError;
 
@@ -80,14 +83,65 @@ pub struct SanMove {
 */
 impl GrammarNode for SanMove {
     fn check_start(s: &str) -> bool {
-        todo!()
+        PieceSpec::check_start(s) || Capture::check_start(s) || Square::check_start(s)
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {
-        todo!()
+        let (piecespec, s) = PieceSpec::parse(s).unwrap_or((PieceSpec::pawn(), s));
+        (&piecespec, s);
+
+        let capture_pair = if Capture::check_start(s) {
+            Capture::parse(s).ok()
+        } else {
+            None
+        };
+        (&capture_pair, s);
+
+        let s = capture_pair
+            .map(|(_, cap_remaining)| cap_remaining)
+            .unwrap_or(s);
+
+        let (destination, s) = if Square::check_start(s) {
+            Square::parse(s)?
+        } else {
+            Err(PgnError::InvalidCheckChar('X'))?
+        };
+
+        let check_pair = if Check::check_start(s) {
+            Check::parse(s).ok()
+        } else {
+            None
+        };
+
+        let s = check_pair
+            .map(|(_, check_remaining)| check_remaining)
+            .unwrap_or(s);
+
+        let sanmove = SanMove {
+            piece: piecespec.piece,
+            destination,
+        };
+
+        Ok((sanmove, s))
+    }
+}
+
+pub fn if_some<T>(pred: bool, val: T) -> Option<T> {
+    if pred {
+        Some(val)
+    } else {
+        None
+    }
+}
+
+pub fn if_some_with<T>(pred: bool, f: impl FnOnce() -> T) -> Option<T> {
+    if pred {
+        Some(f())
+    } else {
+        None
     }
 }
 
@@ -128,24 +182,24 @@ mod test {
         assert_eq!(1, std::mem::size_of::<Check>());
     }
 
-    macro_rules! sm_test {
-        ($piece:expr, $square:expr, $tail:literal, $s:expr) => {
+    macro_rules! assert_simple_match {
+        ($piece:expr, $square:literal, $tail:literal, $to_parse:literal) => {
             assert_eq!(
                 (
                     SanMove {
                         piece: $piece,
-                        destination: $square
+                        destination: Square::parse($square).map(|(s, _)| s).unwrap(),
                     },
                     $tail
                 ),
-                SanMove::parse($s).unwrap()
+                SanMove::parse($to_parse).unwrap()
             )
         };
     }
 
-    // #[test]
-    // fn test_basic() {
-    //     sm_test!(Pawn, square('c', '6'), "", "c6");
-    //     sm_test!(Queen, square('d', '4'), "", "Qd4");
-    // }
+    #[test]
+    fn test_simple() {
+        assert_simple_match!(Piece::Queen, "g4", "TAIL", "Qg4TAIL");
+        assert_simple_match!(Piece::Pawn, "e5", " SPACE", "e5 SPACE");
+    }
 }

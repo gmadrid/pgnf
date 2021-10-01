@@ -3,9 +3,18 @@ use crate::pgn_parser::san_move::piece::Piece;
 use crate::pgn_parser::GrammarNode;
 
 #[derive(Debug, Eq, PartialEq)]
-struct PieceSpec {
-    piece: Piece,
-    disambiguation: Disambiguation,
+pub struct PieceSpec {
+    pub piece: Piece,
+    pub disambiguation: Disambiguation,
+}
+
+impl PieceSpec {
+    pub fn pawn() -> Self {
+        PieceSpec {
+            piece: Piece::Pawn,
+            disambiguation: Disambiguation::None,
+        }
+    }
 }
 
 impl GrammarNode for PieceSpec {
@@ -24,37 +33,39 @@ impl GrammarNode for PieceSpec {
         };
 
         let (disambiguation, s) = if Disambiguation::check_start(s) {
-            Disambiguation::parse(s)?
+            Disambiguation::parse(s).unwrap_or((Disambiguation::None, s))
         } else {
             (Disambiguation::None, s)
         };
 
-        Ok((PieceSpec { piece, disambiguation }, s))
+        Ok((
+            PieceSpec {
+                piece,
+                disambiguation,
+            },
+            s,
+        ))
     }
 }
 
 #[cfg(test)]
 mod test {
     macro_rules! assert_ps_with_tail {
-        ($piece:literal, $tail:literal, $parsed:expr) => {
-
-        }
+        ($piece:literal, $tail:literal, $parsed:expr) => {};
     }
 
     /*
-      Value to test with:
+     Value to test with:
 
-        a6     None    | Err | a6
-        Qa6    Queen 'a' | Err | a6
-        axb6
-        Qxc8
-        Qac8
-        Naxc8
-        N7xb5
-     */
+       a6     None    | Err | a6
+       Qa6    Queen 'a' | Err | a6
+       axb6
+       Qxc8
+       Qac8
+       Naxc8
+       N7xb5
+    */
 
     #[test]
-    fn test_start() {
-
-    }
+    fn test_start() {}
 }
