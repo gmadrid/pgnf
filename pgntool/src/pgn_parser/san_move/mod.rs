@@ -21,7 +21,14 @@ mod rank;
 mod square;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct SanMove {
+pub enum SanMove {
+    Move(SanMoveDetail),
+    LongCastle(Check),
+    ShortCastle(Check),
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct SanMoveDetail {
     piece: Piece,
     destination: Square,
     from_file: Option<File>,
@@ -31,6 +38,23 @@ pub struct SanMove {
 
 fn first<T, U>(param: (T, U)) -> T {
     param.0
+}
+
+impl SanMove {
+    fn parse_castle(s: &str) -> crate::Result<(Self, &str)> {
+        // Check for Long Castle first because short castle is a prefix of long castle.
+        if s.starts_with("O-O-O") {
+            let s = &s["O-O-O".len()..];
+            let (check, s) = Check::parse(s).unwrap_or((Check::None, s));
+            Ok((SanMove::LongCastle(check), s))
+        } else if s.starts_with("O-O") {
+            let s = &s["O-O".len()..];
+            let (check, s) = Check::parse(s).unwrap_or((Check::None, s));
+            Ok((SanMove::ShortCastle(check), s))
+        } else {
+            Err(PgnError::UnexpectedChar('X', 'X'))
+        }
+    }
 }
 
 /*
@@ -99,6 +123,10 @@ impl GrammarNode for SanMove {
     where
         Self: Sized,
     {
+        if let Ok(castle_pair) = SanMove::parse_castle(s) {
+            return Ok(castle_pair);
+        }
+
         let (piecespec, s) = PieceSpec::parse(s).unwrap_or((PieceSpec::pawn(), s));
         dbg!(&piecespec, s);
 
@@ -137,7 +165,7 @@ impl GrammarNode for SanMove {
         let from_file = piecespec.disambiguation.file();
         let from_rank = piecespec.disambiguation.rank();
 
-        let sanmove = SanMove {
+        let detail = SanMoveDetail {
             piece: piecespec.piece,
             destination,
             from_file,
@@ -145,7 +173,7 @@ impl GrammarNode for SanMove {
             check,
         };
 
-        Ok((sanmove, s))
+        Ok((SanMove::Move(detail), s))
     }
 }
 
@@ -194,7 +222,7 @@ mod test {
 
     #[test]
     fn test_size() {
-        assert_eq!(8, std::mem::size_of::<SanMove>());
+        assert_eq!(9, std::mem::size_of::<SanMove>());
         assert_eq!(1, std::mem::size_of::<Piece>());
         assert_eq!(1, std::mem::size_of::<Rank>());
         assert_eq!(1, std::mem::size_of::<File>());
@@ -206,13 +234,13 @@ mod test {
         ($piece:expr, $square:literal, $tail:literal, $to_parse:literal) => {
             assert_eq!(
                 (
-                    SanMove {
+                    SanMove::Move(SanMoveDetail {
                         piece: Piece::parse($piece).map(first).unwrap(),
                         destination: Square::parse($square).map(|(s, _)| s).unwrap(),
                         from_file: None,
                         from_rank: None,
                         check: Check::None,
-                    },
+                    }),
                     $tail
                 ),
                 SanMove::parse($to_parse).unwrap()
@@ -230,13 +258,13 @@ mod test {
         ($piece:literal, $square:literal, $pawn_file:literal, $tail:literal, $to_parse:literal) => {
             assert_eq!(
                 (
-                    SanMove {
+                    SanMove::Move(SanMoveDetail {
                         piece: Piece::parse($piece).map(first).unwrap(),
                         destination: Square::parse($square).map(first).unwrap(),
                         from_file: File::parse($pawn_file).map(first).ok(),
                         from_rank: None,
                         check: Check::None,
-                    },
+                    }),
                     $tail
                 ),
                 SanMove::parse($to_parse).unwrap()
@@ -254,13 +282,13 @@ mod test {
         ($piece:literal, $square:literal, $check:expr, $tail:literal, $to_parse:literal) => {
             assert_eq!(
                 (
-                    SanMove {
+                    SanMove::Move(SanMoveDetail {
                         piece: Piece::parse($piece).map(first).unwrap(),
                         destination: Square::parse($square).map(first).unwrap(),
                         from_file: None,
                         from_rank: None,
                         check: $check,
-                    },
+                    }),
                     $tail
                 ),
                 SanMove::parse($to_parse).unwrap()
@@ -278,13 +306,13 @@ mod test {
         ($piece:literal, $file:expr, $rank:expr, $square:literal, $to_parse:literal) => {
             assert_eq!(
                 (
-                    SanMove {
+                    SanMove::Move(SanMoveDetail {
                         piece: Piece::parse($piece).map(first).unwrap(),
                         destination: Square::parse($square).map(first).unwrap(),
                         from_file: $file,
                         from_rank: $rank,
                         check: Check::None,
-                    },
+                    }),
                     ""
                 ),
                 SanMove::parse($to_parse).unwrap()
@@ -296,6 +324,33 @@ mod test {
     fn test_disambiguate() {
         assert_disambiguate!("R", File::from_letter("h"), None, "e8", "Rhe8");
         assert_disambiguate!("N", None, Rank::from_number("3"), "e1", "N3e1");
-        assert_disambiguate!("B", File::from_letter("a"), Rank::from_number("3"), "c5", "Ba3c5");
+        assert_disambiguate!(
+            "B",
+            File::from_letter("a"),
+            Rank::from_number("3"),
+            "c5",
+            "Ba3c5"
+        );
+    }
+
+    #[test]
+    fn test_castle() {
+        assert_eq!(
+            (SanMove::LongCastle(Check::None), "TAIL"),
+            SanMove::parse("O-O-OTAIL").unwrap()
+        );
+        assert_eq!(
+            (SanMove::ShortCastle(Check::None), " SPACE"),
+            SanMove::parse("O-O SPACE").unwrap()
+        );
+
+        assert_eq!(
+            (SanMove::LongCastle(Check::Check), ""),
+            SanMove::parse("O-O-O+").unwrap()
+        );
+        assert_eq!(
+            (SanMove::ShortCastle(Check::Mate), ""),
+            SanMove::parse("O-O#").unwrap()
+        );
     }
 }
