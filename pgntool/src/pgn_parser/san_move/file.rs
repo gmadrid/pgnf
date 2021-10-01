@@ -6,8 +6,7 @@ pub struct File(pub u8);
 
 impl Debug for File {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}]",
-               ('a' as u8 + self.0 - 1) as char)
+        write!(f, "[{}]", ('a' as u8 + self.0 - 1) as char)
     }
 }
 

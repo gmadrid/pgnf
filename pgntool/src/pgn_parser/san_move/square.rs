@@ -12,9 +12,12 @@ pub struct Square {
 
 impl Debug for Square {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}",
-                          ('a' as u8 + self.file.0 - 1) as char,
-               self.rank.0)
+        write!(
+            f,
+            "{}{}",
+            ('a' as u8 + self.file.0 - 1) as char,
+            self.rank.0
+        )
     }
 }
 
