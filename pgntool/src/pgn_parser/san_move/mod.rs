@@ -116,7 +116,7 @@ impl SanMove {
 */
 impl GrammarNode for SanMove {
     fn check_start(s: &str) -> bool {
-        PieceSpec::check_start(s) || Capture::check_start(s) || Square::check_start(s)
+        PieceSpec::check_start(s) || Capture::check_start(s) || Square::check_start(s) || s.starts_with("O")
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>
@@ -128,7 +128,6 @@ impl GrammarNode for SanMove {
         }
 
         let (piecespec, s) = PieceSpec::parse(s).unwrap_or((PieceSpec::pawn(), s));
-        dbg!(&piecespec, s);
 
         let capture_pair = if Capture::check_start(s) {
             Capture::parse(s).ok()
@@ -154,7 +153,6 @@ impl GrammarNode for SanMove {
             None
         };
 
-        dbg!(&check_pair);
         let s = check_pair
             .as_ref()
             .map(|(_, check_remaining)| *check_remaining)

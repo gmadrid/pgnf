@@ -5,7 +5,8 @@ pub struct NumericAnnotationGlyph {}
 
 impl GrammarNode for NumericAnnotationGlyph {
     fn check_start(s: &str) -> bool {
-        todo!()
+
+        todo!("NAG: '{}'", s)
     }
 
     fn parse(s: &str) -> crate::Result<(Self, &str)>
