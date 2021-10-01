@@ -57,6 +57,7 @@ fn first<T, U>(param: (T, U)) -> T {
   Disambiguate:
     Rhe8
     N3e1
+    Ba3c5
 
   Promotion:
     g8=Q
@@ -134,12 +135,13 @@ impl GrammarNode for SanMove {
         let check = check_pair.map(first).unwrap_or(Check::None);
 
         let from_file = piecespec.disambiguation.file();
+        let from_rank = piecespec.disambiguation.rank();
 
         let sanmove = SanMove {
             piece: piecespec.piece,
             destination,
             from_file,
-            from_rank: None,
+            from_rank,
             check,
         };
 
@@ -270,5 +272,30 @@ mod test {
     fn test_checks() {
         assert_check!("Q", "f6", Check::Check, "TAIL", "Qf6+TAIL");
         assert_check!("N", "d7", Check::Mate, " SPACE", "Nd7# SPACE");
+    }
+
+    macro_rules! assert_disambiguate {
+        ($piece:literal, $file:expr, $rank:expr, $square:literal, $to_parse:literal) => {
+            assert_eq!(
+                (
+                    SanMove {
+                        piece: Piece::parse($piece).map(first).unwrap(),
+                        destination: Square::parse($square).map(first).unwrap(),
+                        from_file: $file,
+                        from_rank: $rank,
+                        check: Check::None,
+                    },
+                    ""
+                ),
+                SanMove::parse($to_parse).unwrap()
+            )
+        };
+    }
+
+    #[test]
+    fn test_disambiguate() {
+        assert_disambiguate!("R", File::from_letter("h"), None, "e8", "Rhe8");
+        assert_disambiguate!("N", None, Rank::from_number("3"), "e1", "N3e1");
+        assert_disambiguate!("B", File::from_letter("a"), Rank::from_number("3"), "c5", "Ba3c5");
     }
 }
