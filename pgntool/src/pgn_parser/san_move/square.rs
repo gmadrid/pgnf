@@ -2,11 +2,20 @@ use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::GrammarNode;
 use crate::PgnError;
+use std::fmt::{Debug, Formatter};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 pub struct Square {
     pub rank: Rank,
     pub file: File,
+}
+
+impl Debug for Square {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}",
+                          ('a' as u8 + self.file.0 - 1) as char,
+               self.rank.0)
+    }
 }
 
 impl GrammarNode for Square {

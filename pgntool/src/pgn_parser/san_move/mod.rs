@@ -24,6 +24,7 @@ mod square;
 pub struct SanMove {
     piece: Piece,
     destination: Square,
+    from_file: Option<File>,
 }
 
 /*
@@ -91,7 +92,7 @@ impl GrammarNode for SanMove {
         Self: Sized,
     {
         let (piecespec, s) = PieceSpec::parse(s).unwrap_or((PieceSpec::pawn(), s));
-        (&piecespec, s);
+        dbg!(&piecespec, s);
 
         let capture_pair = if Capture::check_start(s) {
             Capture::parse(s).ok()
@@ -101,7 +102,8 @@ impl GrammarNode for SanMove {
         (&capture_pair, s);
 
         let s = capture_pair
-            .map(|(_, cap_remaining)| cap_remaining)
+            .as_ref()
+            .map(|(_, cap_remaining)| *cap_remaining)
             .unwrap_or(s);
 
         let (destination, s) = if Square::check_start(s) {
@@ -120,9 +122,13 @@ impl GrammarNode for SanMove {
             .map(|(_, check_remaining)| check_remaining)
             .unwrap_or(s);
 
+        dbg!(&capture_pair);
+        let from_file = piecespec.disambiguation.file();
+
         let sanmove = SanMove {
             piece: piecespec.piece,
             destination,
+            from_file,
         };
 
         Ok((sanmove, s))
@@ -174,7 +180,7 @@ mod test {
 
     #[test]
     fn test_size() {
-        assert_eq!(3, std::mem::size_of::<SanMove>());
+        assert_eq!(5, std::mem::size_of::<SanMove>());
         assert_eq!(1, std::mem::size_of::<Piece>());
         assert_eq!(1, std::mem::size_of::<Rank>());
         assert_eq!(1, std::mem::size_of::<File>());
@@ -187,8 +193,9 @@ mod test {
             assert_eq!(
                 (
                     SanMove {
-                        piece: $piece,
+                        piece: Piece::parse($piece).map(first).unwrap(),
                         destination: Square::parse($square).map(|(s, _)| s).unwrap(),
+                        from_file: None,
                     },
                     $tail
                 ),
@@ -199,7 +206,30 @@ mod test {
 
     #[test]
     fn test_simple() {
-        assert_simple_match!(Piece::Queen, "g4", "TAIL", "Qg4TAIL");
-        assert_simple_match!(Piece::Pawn, "e5", " SPACE", "e5 SPACE");
+        assert_simple_match!("Q", "g4", "TAIL", "Qg4TAIL");
+        assert_simple_match!("P", "e5", " SPACE", "e5 SPACE");
+    }
+
+    fn first<T, U>(param: (T, U)) -> T {
+        param.0
+    }
+
+    macro_rules! assert_capture {
+        ($piece:literal, $square:literal, $pawn_file:literal, $tail:literal, $to_parse:literal) => {
+            assert_eq!(
+                (SanMove {
+                    piece: Piece::parse($piece).map(first).unwrap(),
+                    destination: Square::parse($square).map(first).unwrap(),
+                    from_file: Some(File::parse($pawn_file).map(first).unwrap()),
+                }, $tail),
+                SanMove::parse($to_parse).unwrap()
+            )
+        };
+    }
+
+    #[test]
+    fn test_capture() {
+        assert_capture!("P", "e5", "d", "TAIL", "dxe5TAIL");
+        assert_simple_match!("Q", "f6", " SPACE", "Qxf6 SPACE");
     }
 }

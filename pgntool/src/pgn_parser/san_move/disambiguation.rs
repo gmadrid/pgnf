@@ -13,6 +13,22 @@ pub enum Disambiguation {
 }
 
 impl Disambiguation {
+    pub fn file(&self) -> Option<File> {
+        match self {
+            Self::FileLetter(file) => Some(*file),
+            Self::SquareCoord(square) => Some(square.file),
+            _ => None,
+        }
+    }
+
+    pub fn rank(&self) -> Option<Rank> {
+        match self {
+            Self::RankNumber(rank) => Some(*rank),
+            Self::SquareCoord(square) => Some(square.rank),
+            _ => None,
+        }
+    }
+
     pub fn check_follow(s: &str) -> crate::Result<()> {
         // Ironically, this is an ambiguous, context-sensitive parse.
         // It *must* be followed by either 'x' or SQUARE.

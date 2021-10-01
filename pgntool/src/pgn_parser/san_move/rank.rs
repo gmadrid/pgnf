@@ -1,7 +1,14 @@
 use crate::pgn_parser::GrammarNode;
+use std::fmt::{Debug, Formatter};
 
-#[derive(Debug, Eq, PartialEq)]
-pub struct Rank(u8);
+#[derive(Eq, PartialEq, Copy, Clone)]
+pub struct Rank(pub u8);
+
+impl Debug for Rank {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}]", self.0)
+    }
+}
 
 impl From<char> for Rank {
     fn from(ch: char) -> Self {

@@ -4,7 +4,7 @@ use crate::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Capture {
-    pawn_file: Option<File>,
+    pub pawn_file: Option<File>,
 }
 
 /*

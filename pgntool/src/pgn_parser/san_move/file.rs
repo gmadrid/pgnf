@@ -1,7 +1,15 @@
 use crate::pgn_parser::GrammarNode;
+use std::fmt::{Debug, Formatter};
 
-#[derive(Debug, Eq, PartialEq)]
-pub struct File(u8);
+#[derive(Eq, PartialEq, Copy, Clone)]
+pub struct File(pub u8);
+
+impl Debug for File {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}]",
+               ('a' as u8 + self.0 - 1) as char)
+    }
+}
 
 impl From<char> for File {
     fn from(ch: char) -> Self {
