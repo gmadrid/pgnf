@@ -2,7 +2,7 @@ use crate::pgn_parser::move_number_indication::MoveNumberIndication;
 use crate::pgn_parser::numeric_annotation_glyph::NumericAnnotationGlyph;
 use crate::pgn_parser::san_move::SanMove;
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Element {
@@ -28,16 +28,18 @@ impl GrammarNode for Element {
     where
         Self: Sized,
     {
-        let (element, s) = if MoveNumberIndication::check_start(s) {
+        dbg!(format!("Parsing: '{}'", s));
+        let (element, s) = if MoveNumberIndication::check_start(dbg!(s)) {
             let (mni, remaining) = MoveNumberIndication::parse(s)?;
-            (Element::MoveNumber(mni), remaining)
-        } else if SanMove::check_start(s) {
+            (Element::MoveNumber(mni), dbg!(remaining))
+        } else if SanMove::check_start(dbg!(s)) {
             let (sm, remaining) = SanMove::parse(s)?;
-            (Element::Move(sm), remaining)
-        } else if NumericAnnotationGlyph::check_start(s) {
+            (Element::Move(sm), dbg!(remaining))
+        } else if NumericAnnotationGlyph::check_start(dbg!(s)) {
             let (nag, remaining) = NumericAnnotationGlyph::parse(s)?;
-            (Element::Annotation(nag), remaining)
+            (Element::Annotation(nag), dbg!(remaining))
         } else {
+            dbg!(s);
             return Err(PgnError::UnmatchedInput("Element", s.to_string()));
         };
         Ok((element, s))

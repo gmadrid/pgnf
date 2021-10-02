@@ -1,5 +1,6 @@
+use crate::pgn_error::PgnError;
 use crate::pgn_parser::GrammarNode;
-use crate::{PgnError, Result};
+use crate::Result;
 
 /*
    <game-termination> ::= 1-0

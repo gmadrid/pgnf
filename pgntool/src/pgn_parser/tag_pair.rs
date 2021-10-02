@@ -1,6 +1,7 @@
-use crate::pgn_parser::symbol::Symbol;
+use crate::pgn_error::PgnError;
 use crate::pgn_parser::GrammarNode;
-use crate::{PgnError, Result};
+use crate::pgn_parser::symbol::Symbol;
+use crate::Result;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct TagPair {

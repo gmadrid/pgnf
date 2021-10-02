@@ -1,5 +1,5 @@
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Piece {

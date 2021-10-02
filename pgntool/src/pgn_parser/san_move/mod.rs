@@ -7,7 +7,7 @@ use crate::pgn_parser::san_move::capture::Capture;
 use crate::pgn_parser::san_move::check::Check;
 use crate::pgn_parser::san_move::piecespec::PieceSpec;
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 
 mod capture;
 mod check;

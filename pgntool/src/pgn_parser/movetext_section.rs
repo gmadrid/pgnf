@@ -2,7 +2,7 @@ use crate::pgn_parser::element_sequence::ElementSequence;
 use crate::pgn_parser::game_termination::GameTermination;
 use crate::pgn_parser::GrammarNode;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct MovetextSection {
     element_sequence: ElementSequence,
     game_termination: GameTermination,
@@ -22,7 +22,7 @@ impl GrammarNode for MovetextSection {
     {
         let (element_sequence, s) = ElementSequence::parse(s)?;
 
-        let s = s.trim_start();
+        let s = dbg!(s).trim_start();
 
         let (game_termination, s) = GameTermination::parse(s)?;
 
@@ -33,5 +33,15 @@ impl GrammarNode for MovetextSection {
             },
             s,
         ))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_with_termination() {
+        dbg!(MovetextSection::parse("e4 c6 0-1").unwrap());
     }
 }

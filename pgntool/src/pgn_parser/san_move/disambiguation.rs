@@ -2,7 +2,7 @@ use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::san_move::square::Square;
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Disambiguation {

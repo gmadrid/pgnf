@@ -1,7 +1,7 @@
 use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 use std::fmt::{Debug, Formatter};
 
 #[derive(Eq, PartialEq, Copy, Clone)]

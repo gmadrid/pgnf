@@ -1,6 +1,6 @@
 use crate::pgn_parser::element_sequence::ElementSequence;
 use crate::pgn_parser::GrammarNode;
-use crate::PgnError;
+use crate::pgn_error::PgnError;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct RecursiveVariation {
