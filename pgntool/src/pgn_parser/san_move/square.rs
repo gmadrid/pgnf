@@ -1,7 +1,7 @@
+use crate::pgn_error::PgnError::UnexpectedInput;
 use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::GrammarNode;
-use crate::pgn_error::PgnError;
 use std::fmt::{Debug, Formatter};
 
 #[derive(Eq, PartialEq, Copy, Clone)]
@@ -28,13 +28,13 @@ impl GrammarNode for Square {
         let (file, s) = if File::check_start(s) {
             File::parse(s)?
         } else {
-            return Err(PgnError::InvalidCheckChar('Z'));
+            return Err(UnexpectedInput("Square(file)", s.to_string()));
         };
 
         let (rank, s) = if Rank::check_start(s) {
             Rank::parse(s)?
         } else {
-            return Err(PgnError::InvalidCheckChar('Q'));
+            return Err(UnexpectedInput("Square(rank)", s.to_string()));
         };
 
         Ok((Square { rank, file }, s))

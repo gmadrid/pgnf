@@ -1,6 +1,6 @@
 use crate::pgn_error::PgnError;
-use crate::pgn_parser::GrammarNode;
 use crate::pgn_parser::symbol::Symbol;
+use crate::pgn_parser::GrammarNode;
 use crate::Result;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -14,10 +14,10 @@ fn parse_char(s: &str, ch: char) -> Result<&str> {
         if ch == next_ch {
             Ok(&s[1..])
         } else {
-            Err(PgnError::UnexpectedChar(ch, next_ch))
+            Err(PgnError::UnmatchedChar("parse_char", next_ch))
         }
     } else {
-        Err(PgnError::UnexpectedEndOfInput("parse_char"))
+        Err(PgnError::UnexpectedEOF("parse_char"))
     }
 }
 

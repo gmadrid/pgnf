@@ -1,8 +1,8 @@
+use crate::pgn_error::PgnError;
 use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::san_move::square::Square;
 use crate::pgn_parser::GrammarNode;
-use crate::pgn_error::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Disambiguation {
@@ -30,6 +30,7 @@ impl Disambiguation {
     }
 
     pub fn check_follow(s: &str) -> crate::Result<()> {
+        // TODO: check that this follow set is still valid after the changes to PieceSpec.
         // Ironically, this is an ambiguous, context-sensitive parse.
         // It *must* be followed by either 'x' or SQUARE.
         // (Pawn captures never disambiguate, so PAWNFILE should always be empty.)
@@ -37,7 +38,7 @@ impl Disambiguation {
         if s.starts_with('x') || Square::check_start(s) {
             Ok(())
         } else {
-            Err(PgnError::InvalidCheckChar('Q'))
+            Err(PgnError::UnmatchedFollowSet("Disambiguation"))
         }
     }
 }
@@ -60,6 +61,16 @@ impl From<Square> for Disambiguation {
     }
 }
 
+/*
+    // Ironically, this is an ambiguous, context-sensitive parse.
+    // It *must* be followed by either 'x' or SQUARE.
+    // (Pawn captures always disambiguate.)
+    // You can use this "follow set" to check for a valid DISAMBIGUATION.
+    DISAMBIGUATION ::= RANK
+                   ::= FILE
+                   ::= SQUARE
+                   ::= <empty>
+*/
 impl GrammarNode for Disambiguation {
     fn check_start(s: &str) -> bool {
         // Square is covered by File::check_start().

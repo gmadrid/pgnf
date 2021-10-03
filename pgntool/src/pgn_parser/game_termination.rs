@@ -40,7 +40,7 @@ impl GrammarNode for GameTermination {
             .or_else(|| match_prefix(s, "0-1", GameTermination::BlackWins))
             .or_else(|| match_prefix(s, "1/2-1/2", GameTermination::Tie))
             .or_else(|| match_prefix(s, "*", GameTermination::Unfinished))
-            .ok_or_else(|| PgnError::UnmatchedInput("GameTermination", s.to_string()))
+            .ok_or_else(|| PgnError::UnexpectedInput("GameTermination", s.to_string()))
     }
 }
 

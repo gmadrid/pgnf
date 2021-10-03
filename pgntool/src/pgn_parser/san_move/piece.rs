@@ -1,5 +1,5 @@
-use crate::pgn_parser::GrammarNode;
 use crate::pgn_error::PgnError;
+use crate::pgn_parser::GrammarNode;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Piece {
@@ -28,7 +28,7 @@ impl GrammarNode for Piece {
             Some('R') => Piece::Rook,
             Some('Q') => Piece::Queen,
             Some('K') => Piece::King,
-            _ => return Err(PgnError::UnmatchedInput("Piece", s.to_string())),
+            _ => return Err(PgnError::UnexpectedInput("Piece", s.to_string())),
         };
         Ok((piece, &s[1..]))
     }

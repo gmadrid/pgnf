@@ -1,4 +1,5 @@
 use crate::pgn_parser::GrammarNode;
+use crate::PgnError;
 use itertools::put_back;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -45,7 +46,9 @@ impl GrammarNode for MoveNumberIndication {
 
         Ok((
             MoveNumberIndication {
-                number: num_part.parse()?,
+                number: num_part
+                    .parse()
+                    .map_err(|e| PgnError::ParseIntError("Move number indicator", e))?,
             },
             &s[first_non_period..],
         ))

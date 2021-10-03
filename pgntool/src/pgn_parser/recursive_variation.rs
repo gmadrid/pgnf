@@ -1,6 +1,6 @@
+use crate::pgn_error::PgnError;
 use crate::pgn_parser::element_sequence::ElementSequence;
 use crate::pgn_parser::GrammarNode;
-use crate::pgn_error::PgnError;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct RecursiveVariation {
@@ -20,12 +20,13 @@ impl GrammarNode for RecursiveVariation {
         Self: Sized,
     {
         if !s.starts_with('(') {
-            return Err(PgnError::UnmatchedInput(
+            return Err(PgnError::UnexpectedInput(
                 "Recursive variation",
                 s.to_string(),
             ));
         }
 
+        // skip the '('
         let s = &s[1..];
 
         let (sequence, s) = if ElementSequence::check_start(s) {
@@ -35,12 +36,13 @@ impl GrammarNode for RecursiveVariation {
         };
 
         if !s.starts_with(')') {
-            return Err(PgnError::UnmatchedInput(
+            return Err(PgnError::UnexpectedInput(
                 "Recursive variation",
                 s.to_string(),
             ));
         }
 
+        // skip the ')'
         Ok((RecursiveVariation { sequence }, &s[1..]))
     }
 }

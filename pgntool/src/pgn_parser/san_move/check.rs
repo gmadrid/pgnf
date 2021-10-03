@@ -1,5 +1,5 @@
+use crate::pgn_error::PgnError::{UnexpectedEOF, UnexpectedInput};
 use crate::pgn_parser::GrammarNode;
-use crate::pgn_error::PgnError;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Check {
@@ -8,6 +8,9 @@ pub enum Check {
     None,
 }
 
+/*
+ CHECK ::= [+#]?
+*/
 impl GrammarNode for Check {
     fn check_start(s: &str) -> bool {
         let chars: &[char] = &['+', '#'];
@@ -21,8 +24,8 @@ impl GrammarNode for Check {
         match s.chars().next() {
             Some('+') => Ok((Check::Check, &s[1..])),
             Some('#') => Ok((Check::Mate, &s[1..])),
-            Some(ch) => Err(PgnError::InvalidCheckChar(ch)),
-            None => panic!("did you call check_start()?"),
+            Some(_) => Err(UnexpectedInput("Check", s.to_string())),
+            None => Err(UnexpectedEOF("Check")),
         }
     }
 }

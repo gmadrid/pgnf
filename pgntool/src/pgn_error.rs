@@ -1,26 +1,23 @@
-use thiserror::Error;
 use std::num::ParseIntError;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum PgnError {
-    // TODO: make this a more useful error.
-    //#[error("Unexpected Input: {0}")]
-    //UnexpectedInput(String),
-    #[error("Unmatched input for {0}: {1}")]
-    UnmatchedInput(&'static str, String),
+    #[error("Bad number format while parsing {0}: {1}")]
+    ParseIntError(&'static str, ParseIntError),
 
-    #[error("Unexpected end of input received while parsing {0}")]
-    UnexpectedEndOfInput(&'static str),
+    #[error("The input ended unexpectedly while parsing {0}")]
+    UnexpectedEOF(&'static str),
 
-    #[error("Expected {0}, but found {1}.")]
-    UnexpectedChar(char, char),
+    #[error("Unexpected input while parsing {0}: {1}")]
+    UnexpectedInput(&'static str, String),
 
-    #[error("Unexpected character found while parsing Check: {0}")]
-    InvalidCheckChar(char),
+    // This shouldn't be user-visible.
+    // This is used when a parse is rejected because of the character immediately after
+    // the parsed input. This is required because parts of the grammar are ambiguous.
+    #[error("Unmatched follow set while parsing {0}")]
+    UnmatchedFollowSet(&'static str),
 
-    #[error("{0}")]
-    ParseIntError(#[from] ParseIntError),
-
-    #[error("{0}")]
-    ToolPack(#[from] toolpack::TPError),
+    #[error("Unexpected character while parsing {0}: {1}")]
+    UnmatchedChar(&'static str, char),
 }
