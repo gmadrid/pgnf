@@ -4,20 +4,6 @@ use std::fmt::{Debug, Formatter};
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub struct Rank(pub u8);
 
-impl Rank {
-    pub fn from_number(s: &str) -> Option<Rank> {
-        if let Some(ch) = s.chars().next() {
-            if !('1'..='8').contains(&ch) {
-                None
-            } else {
-                Some(Rank((ch as u8) - b'1' + 1))
-            }
-        } else {
-            None
-        }
-    }
-}
-
 impl Debug for Rank {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{}]", self.0)

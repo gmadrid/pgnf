@@ -4,20 +4,6 @@ use std::fmt::{Debug, Formatter};
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub struct File(pub u8);
 
-impl File {
-    pub fn from_letter(s: &str) -> Option<File> {
-        if let Some(ch) = s.chars().next() {
-            if !('a'..='h').contains(&ch) {
-                None
-            } else {
-                Some(File((ch as u8) - b'a' + 1))
-            }
-        } else {
-            None
-        }
-    }
-}
-
 impl Debug for File {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{}]", (b'a' + self.0 - 1) as char)

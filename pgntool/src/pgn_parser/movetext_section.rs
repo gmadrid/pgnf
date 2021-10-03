@@ -22,7 +22,7 @@ impl GrammarNode for MovetextSection {
     {
         let (element_sequence, s) = ElementSequence::parse(s)?;
 
-        let s = dbg!(s).trim_start();
+        let s = s.trim_start();
 
         let (game_termination, s) = GameTermination::parse(s)?;
 
@@ -43,6 +43,6 @@ mod test {
     //#[test]
     // TODO: make this work.
     fn test_with_termination() {
-        dbg!(MovetextSection::parse("e4 c6 0-1").unwrap());
+        MovetextSection::parse("e4 c6 0-1").unwrap();
     }
 }
