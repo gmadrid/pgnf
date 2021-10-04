@@ -45,6 +45,7 @@ impl GrammarNode for Square {
 mod test {
     use super::*;
     use crate::assert_with_tail;
+    use std::convert::TryFrom;
 
     #[test]
     fn test_start() {

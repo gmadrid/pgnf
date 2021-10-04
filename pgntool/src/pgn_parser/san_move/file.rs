@@ -1,4 +1,7 @@
+use crate::pgn_error::PgnError::UnmatchedChar;
 use crate::pgn_parser::GrammarNode;
+use crate::PgnError;
+use std::convert::TryFrom;
 use std::fmt::{Debug, Formatter};
 
 #[derive(Eq, PartialEq, Copy, Clone)]
@@ -10,10 +13,15 @@ impl Debug for File {
     }
 }
 
-impl From<char> for File {
-    fn from(ch: char) -> Self {
-        // TODO: should I panic here? .
-        File(ch as u8 - b'a' + 1)
+impl TryFrom<char> for File {
+    type Error = PgnError;
+
+    fn try_from(ch: char) -> Result<Self, Self::Error> {
+        if (('a'..='h').contains(&ch)) {
+            Ok(File(ch as u8 - b'a' + 1))
+        } else {
+            Err(UnmatchedChar("File", ch))
+        }
     }
 }
 
@@ -26,8 +34,8 @@ impl GrammarNode for File {
     where
         Self: Sized,
     {
-        // unwrap: unwrap okay, because check_start found a character.
-        Ok((File::from(s.chars().next().unwrap()), &s[1..]))
+        // unwrap: unwrap okay, because check_start found a valid character.
+        Ok((File::try_from(s.chars().next().unwrap()).unwrap(), &s[1..]))
     }
 }
 
@@ -46,15 +54,11 @@ mod test {
 
     #[test]
     fn test_parse() {
-        assert_with_tail!(File::from('a'), "TAIL", File::parse("aTAIL"));
-        assert_with_tail!(File::from('h'), " SPACE", File::parse("h SPACE"));
-    }
-
-    #[test]
-    fn test_from_letter() {
-        assert_eq!(Some(File(1)), File::from_letter("a"));
-
-        assert_eq!(None, File::from_letter(""));
-        assert_eq!(None, File::from_letter("i"));
+        assert_with_tail!(File::try_from('a').unwrap(), "TAIL", File::parse("aTAIL"));
+        assert_with_tail!(
+            File::try_from('h').unwrap(),
+            " SPACE",
+            File::parse("h SPACE")
+        );
     }
 }

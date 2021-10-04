@@ -184,8 +184,8 @@ mod test_macros {
             assert_eq!(
                 (
                     Square {
-                        rank: Rank::from($rank),
-                        file: File::from($file),
+                        rank: Rank::try_from($rank).unwrap(),
+                        file: File::try_from($file).unwrap(),
                     },
                     $tail
                 ),
@@ -202,6 +202,7 @@ mod test_macros {
 mod test {
     use super::*;
     use crate::pgn_parser::san_move::check::Check;
+    use std::convert::TryFrom;
     use toolpack::tupl::first;
 
     #[test]
@@ -266,7 +267,13 @@ mod test {
 
     #[test]
     fn test_capture() {
-        assert_capture!("P", "e5", Some(File::from('d')), "TAIL", "dxe5TAIL");
+        assert_capture!(
+            "P",
+            "e5",
+            Some(File::try_from('d').unwrap()),
+            "TAIL",
+            "dxe5TAIL"
+        );
         assert_capture!("Q", "f6", None, " SPACE", "Qxf6 SPACE");
     }
 
@@ -322,12 +329,12 @@ mod test {
 
     #[test]
     fn test_disambiguate() {
-        assert_disambiguate!("R", File::from_letter("h"), None, "e8", "Rhe8");
-        assert_disambiguate!("N", None, Rank::from_number("3"), "e1", "N3e1");
+        assert_disambiguate!("R", File::try_from('h').ok(), None, "e8", "Rhe8");
+        assert_disambiguate!("N", None, Rank::try_from('3').ok(), "e1", "N3e1");
         assert_disambiguate!(
             "B",
-            File::from_letter("a"),
-            Rank::from_number("3"),
+            File::try_from('a').ok(),
+            Rank::try_from('3').ok(),
             "c5",
             "Ba3c5"
         );
@@ -378,19 +385,21 @@ mod test {
         );
     }
 
-    /*
     macro_rules! assert_promotion {
         ($piece:literal, $square: literal, $capture:expr, $file:expr, $promo_piece:literal, $to_parse:literal) => {
             assert_eq!(
                 (
-                    SanMove::Move(SanMoveDetail {
-                        piece: Piece::parse($piece).map(first).unwrap(),
-                        destination: Square::parse($square).map(first).unwrap(),
-                        from_file: $file,
-                        from_rank: None,,
+                    SanMove {
+                        move_type: SanMoveType::Move(SanMoveDetail {
+                            piece: Piece::parse($piece).map(|(p, _)| p).unwrap(),
+                            destination: Square::parse($square).map(|(p, _)| p).unwrap(),
+                            from_file: $file,
+                            from_rank: None,
+                            capture: $capture,
+                            promote: false,
+                        }),
                         check: Check::None,
-                        capture: $capture,
-                    }),
+                    },
                     ""
                 ),
                 SanMove::parse($to_parse).unwrap()
@@ -400,8 +409,14 @@ mod test {
 
     #[test]
     fn test_promotion() {
-        assert_promotion!("P", "g8", None, "Q", "g8=Q");
-        assert_promotion!("P", "e1", Some(Capture(None)), "N", "dxe1=N");
+        assert_promotion!("P", "g8", false, None, "Q", "g8=Q");
+        assert_promotion!(
+            "P",
+            "e1",
+            true,
+            File::try_from('d').ok(),
+            "N",
+            "dxe1=N"
+        );
     }
-     */
 }

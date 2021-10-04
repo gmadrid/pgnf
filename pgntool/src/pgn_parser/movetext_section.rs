@@ -40,8 +40,7 @@ impl GrammarNode for MovetextSection {
 mod test {
     use super::*;
 
-    //#[test]
-    // TODO: make this work.
+    #[test]
     fn test_with_termination() {
         MovetextSection::parse("e4 c6 0-1").unwrap();
     }

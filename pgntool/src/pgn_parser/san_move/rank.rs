@@ -1,4 +1,7 @@
+use crate::pgn_error::PgnError::UnmatchedChar;
 use crate::pgn_parser::GrammarNode;
+use crate::PgnError;
+use std::convert::TryFrom;
 use std::fmt::{Debug, Formatter};
 
 #[derive(Eq, PartialEq, Copy, Clone)]
@@ -10,9 +13,15 @@ impl Debug for Rank {
     }
 }
 
-impl From<char> for Rank {
-    fn from(ch: char) -> Self {
-        Rank(ch as u8 - b'1' + 1)
+impl TryFrom<char> for Rank {
+    type Error = PgnError;
+
+    fn try_from(ch: char) -> Result<Self, Self::Error> {
+        if (('1'..='8').contains(&ch)) {
+            Ok(Rank(ch as u8 - b'1' + 1))
+        } else {
+            Err(UnmatchedChar("Rank", ch))
+        }
     }
 }
 
@@ -25,8 +34,8 @@ impl GrammarNode for Rank {
     where
         Self: Sized,
     {
-        // unwrap: unwrap okay, because check_start found a character.
-        Ok((Rank::from(s.chars().next().unwrap()), &s[1..]))
+        // unwrap: unwrap okay, because check_start found a valid character.
+        Ok((Rank::try_from(s.chars().next().unwrap()).unwrap(), &s[1..]))
     }
 }
 
@@ -45,7 +54,11 @@ mod test {
 
     #[test]
     fn test_parse() {
-        assert_with_tail!(Rank::from('1'), "TAIL", Rank::parse("1TAIL"));
-        assert_with_tail!(Rank::from('8'), " SPACE", Rank::parse("8 SPACE"));
+        assert_with_tail!(Rank::try_from('1').unwrap(), "TAIL", Rank::parse("1TAIL"));
+        assert_with_tail!(
+            Rank::try_from('8').unwrap(),
+            " SPACE",
+            Rank::parse("8 SPACE")
+        );
     }
 }

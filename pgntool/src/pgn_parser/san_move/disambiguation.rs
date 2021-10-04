@@ -112,11 +112,15 @@ impl GrammarNode for Disambiguation {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::convert::{TryFrom, TryInto};
 
     macro_rules! assert_rank_with_tail {
         ($rank:literal, $tail:literal, $parsed:expr) => {
             assert_eq!(
-                (Disambiguation::RankNumber(Rank::from($rank)), $tail),
+                (
+                    Disambiguation::RankNumber(Rank::try_from($rank).unwrap()),
+                    $tail
+                ),
                 $parsed.unwrap()
             )
         };
@@ -125,7 +129,10 @@ mod test {
     macro_rules! assert_file_with_tail {
         ($file:literal, $tail:literal, $parsed:expr) => {
             assert_eq!(
-                (Disambiguation::FileLetter(File::from($file)), $tail),
+                (
+                    Disambiguation::FileLetter(File::try_from($file).unwrap()),
+                    $tail
+                ),
                 $parsed.unwrap()
             )
         };
@@ -136,8 +143,8 @@ mod test {
             assert_eq!(
                 (
                     Disambiguation::SquareCoord(Square {
-                        rank: $rank.into(),
-                        file: $file.into(),
+                        rank: $rank.try_into().unwrap(),
+                        file: $file.try_into().unwrap(),
                     }),
                     $tail
                 ),
