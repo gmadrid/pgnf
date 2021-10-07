@@ -1,5 +1,5 @@
-use crate::pgn_parser::GrammarNode;
 use crate::pgn_parser::san_move::piece::Piece;
+use crate::pgn_parser::GrammarNode;
 use crate::PgnError;
 
 pub struct Promotion(Piece);
@@ -15,7 +15,10 @@ impl GrammarNode for Promotion {
         s.starts_with('=')
     }
 
-    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)> where Self: Sized {
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
+    where
+        Self: Sized,
+    {
         // Skip the '='. (It's there because the caller should have called check_start().
         let s = &s[1..];
 

@@ -9,8 +9,8 @@ use crate::pgn_error::PgnError::UnexpectedInput;
 use crate::pgn_parser::san_move::capture::Capture;
 use crate::pgn_parser::san_move::check::Check;
 use crate::pgn_parser::san_move::piecespec::PieceSpec;
-use crate::pgn_parser::GrammarNode;
 use crate::pgn_parser::san_move::promotion::Promotion;
+use crate::pgn_parser::GrammarNode;
 
 mod capture;
 mod check;
@@ -18,9 +18,9 @@ mod disambiguation;
 mod file;
 mod piece;
 mod piecespec;
+mod promotion;
 mod rank;
 mod square;
-mod promotion;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct SanMove {
@@ -406,7 +406,7 @@ mod test {
                             from_file: $file,
                             from_rank: None,
                             capture: $capture,
-                            promote: Piece::parse($promo_piece).map(|(p, _) | p).ok(),
+                            promote: Piece::parse($promo_piece).map(|(p, _)| p).ok(),
                         }),
                         check: Check::None,
                     },
@@ -420,13 +420,6 @@ mod test {
     #[test]
     fn test_promotion() {
         assert_promotion!("P", "g8", false, None, "Q", "g8=Q");
-        assert_promotion!(
-            "P",
-            "e1",
-            true,
-            File::try_from('d').ok(),
-            "N",
-            "dxe1=N"
-        );
+        assert_promotion!("P", "e1", true, File::try_from('d').ok(), "N", "dxe1=N");
     }
 }

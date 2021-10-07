@@ -12,12 +12,17 @@ pub enum PgnError {
     #[error("Unexpected input while parsing {0}: {1}")]
     UnexpectedInput(&'static str, String),
 
-    // This shouldn't be user-visible.
-    // This is used when a parse is rejected because of the character immediately after
-    // the parsed input. This is required because parts of the grammar are ambiguous.
-    #[error("Unmatched follow set while parsing {0}")]
-    UnmatchedFollowSet(&'static str),
-
     #[error("Unexpected character while parsing {0}: {1}")]
     UnmatchedChar(&'static str, char),
+
+    // NOT a user-visible error.
+    // This is used when a parse is rejected because of the character immediately after
+    // the parsed input. This is required because parts of the grammar are ambiguous.
+    #[error("Unmatched follow set while parsing")]
+    UnmatchedFollowSet,
+
+    // NOT a user-visible error.
+    // Used to indicate an element list which has been short-circuited by a disambiguated parse.
+    #[error("Element loop terminated")]
+    ElementSequenceTerminated,
 }

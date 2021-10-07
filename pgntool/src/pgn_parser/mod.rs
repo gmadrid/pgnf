@@ -24,14 +24,14 @@ trait GrammarNode {
     // Implementations should _not_ override this.
     fn parse(s: &str) -> Result<(Self, &str)>
     where
-        Self: Sized {
+        Self: Sized,
+    {
         let (node, follow) = Self::parse_wrapped(s)?;
 
         if Self::valid_follow(follow) {
             Ok((node, follow))
-        }  else {
-            // TODO: write code to fill in the "XXX".
-            Err(PgnError::UnmatchedFollowSet("XXX"))
+        } else {
+            Err(PgnError::UnmatchedFollowSet)
         }
     }
 
@@ -49,8 +49,8 @@ trait GrammarNode {
     // - may trim white space from inside the parsed string.
     // - should not trim trailing white space.
     fn parse_wrapped(s: &str) -> Result<(Self, &str)>
-        where
-            Self: Sized;
+    where
+        Self: Sized;
 }
 
 mod element;

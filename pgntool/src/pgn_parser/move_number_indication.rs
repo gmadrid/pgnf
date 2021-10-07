@@ -20,6 +20,12 @@ impl GrammarNode for MoveNumberIndication {
         s.starts_with(|ch: char| ch.is_ascii_digit())
     }
 
+    fn valid_follow(s: &str) -> bool {
+        // MoveNumberIndication is ambiguous with GameTermination.
+        // If the next non-space character could be a GameTermination, then it's not a valid follow.
+        !(s.trim().starts_with('/') || s.trim().starts_with('-'))
+    }
+
     fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,

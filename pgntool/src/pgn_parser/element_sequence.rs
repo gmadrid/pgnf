@@ -1,6 +1,7 @@
 use crate::pgn_parser::element::Element;
 use crate::pgn_parser::recursive_variation::RecursiveVariation;
 use crate::pgn_parser::GrammarNode;
+use crate::PgnError;
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct ElementSequence {
@@ -32,7 +33,11 @@ impl GrammarNode for ElementSequence {
 
         loop {
             if Element::check_start(s) {
-                let (element, remainder) = Element::parse(s)?;
+                let element_result = Element::parse(s);
+                if matches!(element_result, Err(PgnError::UnmatchedFollowSet)) {
+                    break;
+                }
+                let (element, remainder) = element_result?;
                 sequence.push(SequenceMember::Move(element));
                 s = remainder.trim_start();
             } else if RecursiveVariation::check_start(s) {
