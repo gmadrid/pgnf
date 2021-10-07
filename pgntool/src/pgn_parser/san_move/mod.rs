@@ -10,6 +10,7 @@ use crate::pgn_parser::san_move::capture::Capture;
 use crate::pgn_parser::san_move::check::Check;
 use crate::pgn_parser::san_move::piecespec::PieceSpec;
 use crate::pgn_parser::GrammarNode;
+use crate::pgn_parser::san_move::promotion::Promotion;
 
 mod capture;
 mod check;
@@ -19,6 +20,7 @@ mod piece;
 mod piecespec;
 mod rank;
 mod square;
+mod promotion;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct SanMove {
@@ -40,7 +42,7 @@ pub struct SanMoveDetail {
     from_file: Option<File>,
     from_rank: Option<Rank>,
     capture: bool,
-    promote: bool,
+    promote: Option<Piece>,
 }
 
 impl SanMove {
@@ -93,7 +95,7 @@ impl SanMove {
     fxg1=Q+
 
   A candidate grammar for a SAN move:
-    SANMOVE ::= <PIECESPEC><CAPTURE><DESTINATION><CHECK>
+    SANMOVE ::= <PIECESPEC><CAPTURE><DESTINATION><PROMOTION><CHECK>
     PIECESPEC ::= <PIECE><DISAMBIGUATION>
               ::= <empty>   // implied pawn
     CAPTURE ::= 'x'
@@ -113,6 +115,8 @@ impl SanMove {
     RANK ::= [1-8]
     SQUARE ::= <RANK><FILE>
     DESTINATION ::= SQUARE
+    PROMOTION ::= '=' <PIECE>
+              ::= <empty>
     CHECK ::= [+#]?
 */
 impl GrammarNode for SanMove {
@@ -150,6 +154,12 @@ impl GrammarNode for SanMove {
             return Err(UnexpectedInput("Destination square", s.to_string()));
         };
 
+        let (promotion, s) = if Promotion::check_start(s) {
+            Promotion::parse(s).map(|(p, s)| (Some(Piece::from(p)), s))?
+        } else {
+            (None, s)
+        };
+
         let (check, s) = if_some(Check::check_start(s))
             .and_then(|_| Check::parse(s).ok())
             .unwrap_or((Check::None, s));
@@ -163,7 +173,7 @@ impl GrammarNode for SanMove {
             from_file,
             from_rank,
             capture,
-            promote: false, // TODO: deal with this.
+            promote: promotion.into(),
         };
 
         Ok((
@@ -227,7 +237,7 @@ mod test {
                             from_file: None,
                             from_rank: None,
                             capture: false,
-                            promote: false
+                            promote: None,
                         })
                     },
                     $tail
@@ -254,7 +264,7 @@ mod test {
                             from_file: $pawn_file,
                             from_rank: None,
                             capture: true,
-                            promote: false,
+                            promote: None,
                         }),
                         check: Check::None,
                     },
@@ -288,7 +298,7 @@ mod test {
                             from_file: None,
                             from_rank: None,
                             capture: false,
-                            promote: false
+                            promote: None,
                         }),
                         check: $check
                     },
@@ -316,7 +326,7 @@ mod test {
                             from_file: $file,
                             from_rank: $rank,
                             capture: false,
-                            promote: false
+                            promote: None,
                         }),
                         check: Check::None
                     },
@@ -396,7 +406,7 @@ mod test {
                             from_file: $file,
                             from_rank: None,
                             capture: $capture,
-                            promote: false,
+                            promote: Piece::parse($promo_piece).map(|(p, _) | p).ok(),
                         }),
                         check: Check::None,
                     },
