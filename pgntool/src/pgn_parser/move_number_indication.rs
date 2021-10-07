@@ -30,14 +30,15 @@ impl GrammarNode for MoveNumberIndication {
     where
         Self: Sized,
     {
+        // TODO: is this enumerate necessary?
         let mut iter = put_back(s.chars().enumerate());
 
-        let (num_part, first_non_num): (&str, _) =
+        let num_part: &str =
             if let Some((idx, ch)) = iter.find(|(_, ch)| !ch.is_ascii_digit()) {
                 iter.put_back((idx, ch));
-                (&s[..idx], idx)
+                &s[..idx]
             } else {
-                (s, s.len())
+                s
             };
 
         // TODO: deal with spaces between number and periods.

@@ -17,7 +17,7 @@ impl TryFrom<char> for File {
     type Error = PgnError;
 
     fn try_from(ch: char) -> Result<Self, Self::Error> {
-        if (('a'..='h').contains(&ch)) {
+        if ('a'..='h').contains(&ch) {
             Ok(File(ch as u8 - b'a' + 1))
         } else {
             Err(UnmatchedChar("File", ch))

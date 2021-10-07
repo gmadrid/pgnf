@@ -36,7 +36,7 @@ trait GrammarNode {
     }
 
     // TODO: document this.
-    fn valid_follow(s: &str) -> bool {
+    fn valid_follow(_: &str) -> bool {
         true
     }
 

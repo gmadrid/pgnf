@@ -17,7 +17,7 @@ impl TryFrom<char> for Rank {
     type Error = PgnError;
 
     fn try_from(ch: char) -> Result<Self, Self::Error> {
-        if (('1'..='8').contains(&ch)) {
+        if ('1'..='8').contains(&ch) {
             Ok(Rank(ch as u8 - b'1' + 1))
         } else {
             Err(UnmatchedChar("Rank", ch))

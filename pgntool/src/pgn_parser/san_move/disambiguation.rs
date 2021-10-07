@@ -1,4 +1,3 @@
-use crate::pgn_error::PgnError;
 use crate::pgn_parser::san_move::file::File;
 use crate::pgn_parser::san_move::rank::Rank;
 use crate::pgn_parser::san_move::square::Square;

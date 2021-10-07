@@ -173,7 +173,7 @@ impl GrammarNode for SanMove {
             from_file,
             from_rank,
             capture,
-            promote: promotion.into(),
+            promote: promotion,
         };
 
         Ok((
