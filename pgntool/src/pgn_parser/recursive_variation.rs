@@ -26,14 +26,16 @@ impl GrammarNode for RecursiveVariation {
             ));
         }
 
-        // skip the '('
-        let s = &s[1..];
+        // skip the '(' and spaces.
+        let s = s[1..].trim();
 
         let (sequence, s) = if ElementSequence::check_start(s) {
             ElementSequence::parse(s)?
         } else {
             (ElementSequence::default(), s)
         };
+
+        let s = s.trim();
 
         if !s.starts_with(')') {
             return Err(PgnError::UnexpectedInput(

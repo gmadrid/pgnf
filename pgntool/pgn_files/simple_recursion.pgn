@@ -1,0 +1,7 @@
+[Event "Simple recursion"]
+[Date "2021.09.11"]
+[White "Noone"]
+[Black "Anyone"]
+[Result "*"]
+
+1. e4 c6 2. d4 ( e5 e6 ) d5 *
