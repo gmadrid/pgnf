@@ -127,7 +127,7 @@ impl GrammarNode for SanMove {
             || s.starts_with('O')
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

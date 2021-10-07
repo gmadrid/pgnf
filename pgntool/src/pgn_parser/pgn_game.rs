@@ -16,7 +16,7 @@ impl GrammarNode for PgnGame {
         TagSection::check_start(s) || MovetextSection::check_start(s)
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

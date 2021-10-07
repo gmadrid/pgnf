@@ -35,7 +35,7 @@ impl GrammarNode for GameTermination {
         s.starts_with(start_chars)
     }
 
-    fn parse(s: &str) -> Result<(GameTermination, &str)> {
+    fn parse_wrapped(s: &str) -> Result<(GameTermination, &str)> {
         match_prefix(s, "1-0", GameTermination::WhiteWins)
             .or_else(|| match_prefix(s, "0-1", GameTermination::BlackWins))
             .or_else(|| match_prefix(s, "1/2-1/2", GameTermination::Tie))

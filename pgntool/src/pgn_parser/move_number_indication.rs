@@ -20,7 +20,7 @@ impl GrammarNode for MoveNumberIndication {
         s.starts_with(|ch: char| ch.is_ascii_digit())
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

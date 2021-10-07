@@ -13,7 +13,7 @@ impl GrammarNode for Capture {
         s.starts_with('x')
     }
 
-    fn parse(s: &str) -> crate::Result<(Capture, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Capture, &str)>
     where
         Self: Sized,
     {

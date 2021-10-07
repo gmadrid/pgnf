@@ -24,7 +24,7 @@ impl GrammarNode for Element {
             || NumericAnnotationGlyph::check_start(s)
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

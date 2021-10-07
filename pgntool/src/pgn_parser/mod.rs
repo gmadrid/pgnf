@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{PgnError, Result};
 
 trait GrammarNode {
     // Returns true if the first character of the string is a valid first letter for the
@@ -16,9 +16,41 @@ trait GrammarNode {
     //   responsibility.)
     // - may trim white space from inside the parsed string.
     // - should not trim trailing white space.
+
+    // Returns a parsed node and the 'tail'. (See parse_wrapped for more details.)
+    //
+    // Also, check validity of the parse by checking the follow set.
+    //
+    // Implementations should _not_ override this.
     fn parse(s: &str) -> Result<(Self, &str)>
     where
-        Self: Sized;
+        Self: Sized {
+        let (node, follow) = Self::parse_wrapped(s)?;
+
+        if Self::valid_follow(follow) {
+            Ok((node, follow))
+        }  else {
+            // TODO: write code to fill in the "XXX".
+            Err(PgnError::UnmatchedFollowSet("XXX"))
+        }
+    }
+
+    // TODO: document this.
+    fn valid_follow(s: &str) -> bool {
+        true
+    }
+
+    // Returns a parsed node and the 'tail' (the part of the string remaining after parsing
+    // the node).
+    //
+    // - should assume that check_start() has been called and returned 'true' on the string.
+    // - should not trim white space from the start of the string. (That is the caller's
+    //   responsibility.)
+    // - may trim white space from inside the parsed string.
+    // - should not trim trailing white space.
+    fn parse_wrapped(s: &str) -> Result<(Self, &str)>
+        where
+            Self: Sized;
 }
 
 mod element;

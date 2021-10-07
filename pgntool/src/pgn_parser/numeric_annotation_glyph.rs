@@ -8,7 +8,7 @@ impl GrammarNode for NumericAnnotationGlyph {
         s.starts_with('$')
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

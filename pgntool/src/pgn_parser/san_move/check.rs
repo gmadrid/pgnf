@@ -17,7 +17,7 @@ impl GrammarNode for Check {
         s.starts_with(chars)
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

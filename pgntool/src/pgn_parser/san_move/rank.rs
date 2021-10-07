@@ -30,7 +30,7 @@ impl GrammarNode for Rank {
         s.starts_with(|ch: char| ('1'..='8').contains(&ch))
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

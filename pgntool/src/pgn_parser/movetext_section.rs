@@ -16,7 +16,7 @@ impl GrammarNode for MovetextSection {
         ElementSequence::check_start(s) || GameTermination::check_start(s)
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {

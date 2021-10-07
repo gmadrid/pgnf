@@ -28,19 +28,6 @@ impl Disambiguation {
             _ => None,
         }
     }
-
-    pub fn check_follow(s: &str) -> crate::Result<()> {
-        // TODO: check that this follow set is still valid after the changes to PieceSpec.
-        // Ironically, this is an ambiguous, context-sensitive parse.
-        // It *must* be followed by either 'x' or SQUARE.
-        // (Pawn captures never disambiguate, so PAWNFILE should always be empty.)
-        // You can use this "follow set" to check for a valid DISAMBIGUATION.
-        if s.starts_with('x') || Square::check_start(s) {
-            Ok(())
-        } else {
-            Err(PgnError::UnmatchedFollowSet("Disambiguation"))
-        }
-    }
 }
 
 impl From<File> for Disambiguation {
@@ -77,14 +64,20 @@ impl GrammarNode for Disambiguation {
         File::check_start(s) || Rank::check_start(s)
     }
 
-    fn parse(s: &str) -> crate::Result<(Self, &str)>
+    fn valid_follow(s: &str) -> bool {
+        // Ironically, Disambiguation is an ambiguous, context-sensitive parse.
+        // It *must* be followed by either 'x' or SQUARE.
+        // (Pawn captures never disambiguate, so PAWNFILE should always be empty.)
+        s.starts_with('x') || Square::check_start(s)
+    }
+
+    fn parse_wrapped(s: &str) -> crate::Result<(Self, &str)>
     where
         Self: Sized,
     {
         // Try to read the Square first, consuming two characters.
         if Square::check_start(s) {
             if let Ok((square, remaining)) = Square::parse(s) {
-                Self::check_follow(remaining)?;
                 return Ok((Self::from(square), remaining));
             }
         }
@@ -92,7 +85,6 @@ impl GrammarNode for Disambiguation {
         // If the Square doesn't work, then it might be just a File.
         if File::check_start(s) {
             if let Ok((file, remaining)) = File::parse(s) {
-                Self::check_follow(remaining)?;
                 return Ok((Self::from(file), remaining));
             }
         }
@@ -100,7 +92,6 @@ impl GrammarNode for Disambiguation {
         // Otherwise, it's just a Rank.
         if Rank::check_start(s) {
             if let Ok((rank, remaining)) = Rank::parse(s) {
-                Self::check_follow(remaining)?;
                 return Ok((Self::from(rank), remaining));
             }
         }
