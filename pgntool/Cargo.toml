@@ -2,13 +2,15 @@
 edition = "2018"
 name = "pgntool"
 version = "0.1.0"
+
 [dependencies]
 argh = "*"
+chumsky = "0.5.0"
 itertools = "*"
 thiserror = "*"
 
-[dependencies.toolpack]
-path = "../toolpack"
-version = "*"
+#[dependencies.toolpack]
+#path = "../toolpack"
+#version = "*"
 
 [lib]

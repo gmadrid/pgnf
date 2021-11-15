@@ -29,7 +29,7 @@ fn process_stdin() -> Result<()> {
 fn process_pgn_files(args: Args) -> Result<()> {
     for file in args.pgn_files {
         let pgn_string = read_to_string(file)?;
-        let database = pgntool::parse_pgn(pgn_string)?;
+        let database = pgntool::parse_pgn(&pgn_string)?;
         dbg!(database);
     }
     Ok(())

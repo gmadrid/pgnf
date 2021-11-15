@@ -6,6 +6,7 @@ pub enum PgnError {
     #[error("Bad number format while parsing {0}: {1}")]
     ParseIntError(&'static str, ParseIntError),
 
+    // TODO: ARE THE FOLLOWING NECESSARY IN THE NEW REGIME //
     #[error("The input ended unexpectedly while parsing {0}")]
     UnexpectedEOF(&'static str),
 
