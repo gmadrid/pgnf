@@ -1,6 +1,9 @@
 mod database;
 pub use database::*;
 
+mod element;
+pub use element::*;
+
 mod movetext;
 pub use movetext::*;
 

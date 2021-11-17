@@ -1,11 +1,11 @@
 /*
-    <PGN-database> ::= <PGN-game> <PGN-database>
-                       <empty>
-    <PGN-game> ::= <tag-section> <movetext-section>
- */
+   <PGN-database> ::= <PGN-game> <PGN-database>
+                      <empty>
+   <PGN-game> ::= <tag-section> <movetext-section>
+*/
 
-use chumsky::prelude::*;
 use crate::combinators::TagSection;
+use chumsky::prelude::*;
 
 pub struct PgnDatabase;
 

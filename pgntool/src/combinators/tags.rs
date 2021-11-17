@@ -19,7 +19,8 @@ pub struct TagPair {
 }
 
 pub fn tag_section_matcher() -> impl Parser<char, TagSection, Error = Simple<char>> {
-    tag_pair_matcher().repeated()
+    tag_pair_matcher()
+        .repeated()
         .map(|pairs| TagSection { pairs })
         .labelled("TAG SECTION")
 }
