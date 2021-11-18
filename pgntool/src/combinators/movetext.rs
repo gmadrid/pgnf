@@ -88,23 +88,24 @@ mod test {
     }
 
     macro_rules! qseq {
-        ($($x:ident $v:expr),+) => { ElementSequence { members: vec![ $(member!($x $v),)+ ] } };
-    }
-
-    macro_rules! member {
-        ( san $sanmove:expr ) => {
-            SequenceMember::Elem(ElementP::SanMove($sanmove.to_string()))
-        };
-        ( mv $movenum:expr) => {
-            SequenceMember::Elem(ElementP::MoveNumber($movenum))
-        };
+        ($($v:expr),+) => { ElementSequence { members: vec![ $(SequenceMember::Elem($v.to_element()),)+ ] } };
     }
 
     trait ToEl {
         fn to_element(&self) -> ElementP;
     }
 
-    
+    impl ToEl for i32 {
+        fn to_element(&self) -> ElementP {
+            ElementP::MoveNumber(*self)
+        }
+    }
+
+    impl ToEl for &str {
+        fn to_element(&self) -> ElementP {
+            ElementP::SanMove(self.to_string())
+        }
+    }
 
     #[test]
     fn test_short_sequence() {
@@ -112,20 +113,22 @@ mod test {
 
         assert_eq!(
             matcher.parse("1. e4 c6 2. d4 d5 3. Nc3 dxe4").unwrap(),
-            qseq!(mv 1, san "e4", san "c6", mv 2, san "d4", san "d5", mv 3, san "Nc3", san "dxe4")
+            qseq!(1, "e4", "c6", 2, "d4", "d5", 3, "Nc3", "dxe4")
         );
     }
 
-        #[test]
-        fn test_short_sequence_with_newline() {
-            let matcher = element_sequence_matcher();
+    #[test]
+    fn test_short_sequence_with_newline() {
+        let matcher = element_sequence_matcher();
 
-            // TODO: make a macro to make this feasible.
-            assert_eq!(matcher.parse(r#"1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nf6 5. Bd3 Nbd7 6. Nxf6+ Nxf6 7. Bf4 e6 8.
+        // TODO: make a macro to make this feasible.
+        assert_eq!(matcher.parse(r#"1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nf6 5. Bd3 Nbd7 6. Nxf6+ Nxf6 7. Bf4 e6 8.
     c3 Bd6 9. Bxd6 Qxd6 "#).unwrap(),
-                qseq!()
+                qseq!(1, "e4", "c6", 2, "d4", "d5", 3, "Nc3", "dxe4", 4, "Nxe4", "Nf6",
+                5, "Bd3", "Nbd7", 6, "Nxf6+", "Nxf6", 7, "Bf4", "e6",
+                8, "c3", "Bd6", 9, "Bxd6", "Qxd6")
             );
-        }
+    }
 
     #[test]
     fn test_element_sequence_matcher() {
