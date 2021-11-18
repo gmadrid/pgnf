@@ -121,7 +121,6 @@ mod test {
     fn test_short_sequence_with_newline() {
         let matcher = element_sequence_matcher();
 
-        // TODO: make a macro to make this feasible.
         assert_eq!(matcher.parse(r#"1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nf6 5. Bd3 Nbd7 6. Nxf6+ Nxf6 7. Bf4 e6 8.
     c3 Bd6 9. Bxd6 Qxd6 "#).unwrap(),
                 qseq!(1, "e4", "c6", 2, "d4", "d5", 3, "Nc3", "dxe4", 4, "Nxe4", "Nf6",
@@ -136,34 +135,23 @@ mod test {
 
         assert_eq!(
             matcher.parse("1. e5").unwrap(),
-            ElementSequence {
-                members: vec![
-                    SequenceMember::Elem(ElementP::MoveNumber(1)),
-                    SequenceMember::Elem(ElementP::SanMove("e5".to_string()))
-                ]
-            }
+            qseq!(1, "e5")
         );
         assert_eq!(
             matcher.parse("(1. e5)").unwrap(),
             ElementSequence {
-                members: vec![SequenceMember::Recursion(ElementSequence {
-                    members: vec![
-                        SequenceMember::Elem(ElementP::MoveNumber(1)),
-                        SequenceMember::Elem(ElementP::SanMove("e5".to_string()))
-                    ]
-                })]
+                members: vec![SequenceMember::Recursion(
+                    qseq!(1, "e5")
+                )]
             }
         );
         // Another test with spaces around the recursion.
         assert_eq!(
             matcher.parse("( 1. e5 )").unwrap(),
             ElementSequence {
-                members: vec![SequenceMember::Recursion(ElementSequence {
-                    members: vec![
-                        SequenceMember::Elem(ElementP::MoveNumber(1)),
-                        SequenceMember::Elem(ElementP::SanMove("e5".to_string()))
-                    ]
-                })]
+                members: vec![SequenceMember::Recursion(
+                    qseq!(1, "e5")
+                )]
             }
         );
     }
