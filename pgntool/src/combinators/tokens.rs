@@ -61,8 +61,7 @@ impl From<Nag> for i32 {
 pub fn nag_matcher() -> impl Parser<char, Nag, Error = Simple<char>> {
     just('$')
         // TODO: replace this with text::int
-        .ignore_then(filter(|c: &char| c.is_ascii_digit()).repeated().at_least(1))
-        .collect()
+        .ignore_then(chumsky::text::int(10))
         .try_map(|s: String, span| {
             i32::from_str(&s).map_err(|e| Simple::custom(span, format!("{}", e)))
         })
