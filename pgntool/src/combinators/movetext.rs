@@ -133,25 +133,18 @@ mod test {
     fn test_element_sequence_matcher() {
         let matcher = element_sequence_matcher();
 
-        assert_eq!(
-            matcher.parse("1. e5").unwrap(),
-            qseq!(1, "e5")
-        );
+        assert_eq!(matcher.parse("1. e5").unwrap(), qseq!(1, "e5"));
         assert_eq!(
             matcher.parse("(1. e5)").unwrap(),
             ElementSequence {
-                members: vec![SequenceMember::Recursion(
-                    qseq!(1, "e5")
-                )]
+                members: vec![SequenceMember::Recursion(qseq!(1, "e5"))]
             }
         );
         // Another test with spaces around the recursion.
         assert_eq!(
             matcher.parse("( 1. e5 )").unwrap(),
             ElementSequence {
-                members: vec![SequenceMember::Recursion(
-                    qseq!(1, "e5")
-                )]
+                members: vec![SequenceMember::Recursion(qseq!(1, "e5"))]
             }
         );
     }
