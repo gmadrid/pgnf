@@ -11,6 +11,10 @@ impl From<Ident> for String {
     }
 }
 
+fn is_printable(ch: &char) -> bool {
+    (0x20u32..=0x7e).contains(&From::from(*ch))
+}
+
 fn is_ident_character(ch: &char) -> bool {
     ch.is_ascii_alphanumeric()
         || *ch == '_'
@@ -37,16 +41,23 @@ impl From<PgnStr> for String {
     }
 }
 
+pub fn escaped_char_matcher() -> impl Parser<char, char, Error = Simple<char>> {
+    just('\\').or(just('"'))
+}
+
 pub fn string_matcher() -> impl Parser<char, PgnStr, Error = Simple<char>> {
-    // TODO: Restrict '\' escaping to \n and \\.
-    // TODO: don't allow non-printables in a String.
-    // TODO: limit to 255 chars
-    filter(|c| (*c != '"' && *c != '\\'))
-        .or(just('\\').ignore_then(any()))
+    filter(|c| (*c != '"' && *c != '\\' && is_printable(c)))
+        .or(just('\\').ignore_then(escaped_char_matcher()))
         .repeated()
         .delimited_by('"', '"')
         .collect()
-        .map(PgnStr)
+        .try_map(|s: String, span| {
+            if s.len() > 255 {
+                Err(Simple::custom(span, "Strings must have length <= 255."))
+            } else {
+                Ok(PgnStr(s.to_string()))
+            }
+        })
 }
 
 #[derive(Hash, Eq, PartialEq, Clone, Debug)]
@@ -60,7 +71,6 @@ impl From<Nag> for i32 {
 
 pub fn nag_matcher() -> impl Parser<char, Nag, Error = Simple<char>> {
     just('$')
-        // TODO: replace this with text::int
         .ignore_then(chumsky::text::int(10))
         .try_map(|s: String, span| {
             i32::from_str(&s).map_err(|e| Simple::custom(span, format!("{}", e)))
@@ -86,6 +96,33 @@ mod test {
             Ok(PgnStr(r#"Hell\o"#.to_string()))
         );
         assert_eq!(matcher.parse(r#""""#), Ok(PgnStr("".to_string())));
+    }
+
+    #[test]
+    fn test_bad_strings() {
+        let matcher = string_matcher();
+
+        // non-printables are not allowed
+        assert!(matcher.parse("\"foo\tbar\"").is_err());
+
+        // Only '\' and '"' are allowed to be escaped.
+        assert!(matcher.parse(r#""\"""#).is_ok());
+        assert!(matcher.parse(r#""\\""#).is_ok());
+        assert!(dbg!(matcher.parse(r#""\n""#)).is_err());
+    }
+
+    #[test]
+    fn test_long_string() {
+        let matcher = string_matcher();
+
+        let test_255 = "\"123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456710012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345672001234567890123456789012345678901234567890123456789012255\"";
+        assert_eq!(257, test_255.len());  // +2 for the quotes
+
+        let test_256 = "\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567100123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456720012345678901234567890123456789012345678901234567890123256\"";
+        assert_eq!(258, test_256.len());  // +2 for the quotes
+
+        assert!(matcher.parse(test_255).is_ok());
+        assert!(matcher.parse(test_256).is_err());
     }
 
     #[test]
