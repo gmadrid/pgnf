@@ -23,14 +23,14 @@
                         "/2-1/2"       -- game-termination, tie game
 */
 
-use crate::combinators::{nag_matcher, symbol_matcher};
+use crate::combinators::{ident_matcher, nag_matcher};
 use chumsky::prelude::*;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ElementP {
     MoveNumber(i32),
     SanMove(String),
-    NAG(i32),
+    Nag(i32),
 
     Termination(GameTermination),
 }
@@ -78,14 +78,14 @@ pub fn element_p_matcher() -> impl Parser<char, ElementP, Error = Simple<char>> 
                     })?))
                 }
                 // TODO: dael with errors.
-                ElementSuffix::BadTermination(bad_str) => {
+                ElementSuffix::BadTermination(_bad_str) => {
                     Err(Simple::custom(span, "bad termination"))
                 }
             }
         })
         .or(just('*').map(|_| ElementP::Termination(GameTermination::Unterminated)))
-        .or(symbol_matcher().map(|token| ElementP::SanMove(token.into())))
-        .or(nag_matcher().map(|token| ElementP::NAG(token.into())))
+        .or(ident_matcher().map(|ident| ElementP::SanMove(ident.into())))
+        .or(nag_matcher().map(|nag| ElementP::Nag(nag.into())))
 }
 
 fn validate(
@@ -119,21 +119,17 @@ fn validate(
 fn element_suffix_matcher() -> impl Parser<char, ElementSuffix, Error = Simple<char>> {
     seq("/2-1/2".chars())
         .map(|_| ElementSuffix::Termination(GameTermination::Tie))
-        .or(just('-').ignore_then(chumsky::text::int(10)).try_map(
-            |num, span: std::ops::Range<usize>| {
-                let span_clone = span.clone();
-
-                if let Ok(parsed_num) = num.parse::<i32>() {
-                    match parsed_num {
-                        0 => Ok(ElementSuffix::Termination(GameTermination::White)),
-                        1 => Ok(ElementSuffix::Termination(GameTermination::Black)),
-                        _ => Ok(ElementSuffix::BadTermination(num)),
-                    }
-                } else {
-                    Ok(ElementSuffix::BadTermination(num))
+        .or(just('-').ignore_then(chumsky::text::int(10)).map(|num| {
+            if let Ok(parsed_num) = num.parse::<i32>() {
+                match parsed_num {
+                    0 => ElementSuffix::Termination(GameTermination::White),
+                    1 => ElementSuffix::Termination(GameTermination::Black),
+                    _ => ElementSuffix::BadTermination(num),
                 }
-            },
-        ))
+            } else {
+                ElementSuffix::BadTermination(num)
+            }
+        }))
         .or(just('.').repeated().map(|_| ElementSuffix::MoveNumber))
 }
 
@@ -175,7 +171,7 @@ mod test {
             ElementP::SanMove("e5".to_string())
         );
 
-        assert_eq!(matcher.parse("$32").unwrap(), ElementP::NAG(32))
+        assert_eq!(matcher.parse("$32").unwrap(), ElementP::Nag(32))
     }
 
     #[test]

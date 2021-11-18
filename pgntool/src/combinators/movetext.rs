@@ -3,16 +3,10 @@
    <element-sequence> ::= <element> <element-sequence>
                           '(' <element-sequence> ')' <element-sequence>
                           <empty>
-
-
 */
 
-use crate::combinators::ElementP::MoveNumber;
-use crate::combinators::{
-    element_p_matcher, integer_matcher, nag_matcher, symbol_matcher, ElementP, GameTermination,
-};
+use crate::combinators::{element_p_matcher, ElementP, GameTermination};
 use chumsky::prelude::*;
-use chumsky::text::whitespace;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct MovetextSection {
@@ -20,12 +14,17 @@ pub struct MovetextSection {
     termination: GameTermination,
 }
 
-fn movetext_section_matcher() -> impl Parser<char, MovetextSection, Error = Simple<char>> {
-    element_sequence_matcher().try_map(|mut sequence, span| {
+impl MovetextSection {
+    pub fn is_empty(&self) -> bool {
+        self.sequence.members.is_empty()
+    }
+}
+
+pub fn movetext_section_matcher() -> impl Parser<char, MovetextSection, Error = Simple<char>> {
+    element_sequence_matcher().try_map(|mut sequence, _span| {
         // TODO: need to check for GameTermination which is not at the end of the list.
         if let Some(SequenceMember::Elem(ElementP::Termination(term))) = sequence.members.last() {
-            // unwrap: okay because we just checked it in the enclosing if/let.
-            let term_clone = term.clone();
+            let term_clone = *term;
             sequence.members.pop();
             Ok(MovetextSection {
                 sequence,
@@ -56,8 +55,8 @@ fn element_sequence_matcher() -> impl Parser<char, ElementSequence, Error = Simp
     recursive(|matcher| {
         matcher
             .delimited_by('(', ')')
-            .map(|es| SequenceMember::Recursion(es))
-            .or(element_p_matcher().map(|el| SequenceMember::Elem(el)))
+            .map(SequenceMember::Recursion)
+            .or(element_p_matcher().map(SequenceMember::Elem))
             .padded()
             .repeated()
             .collect::<Vec<SequenceMember>>()
@@ -87,6 +86,34 @@ mod test {
             }
         )
     }
+
+//     #[test]
+//     fn test_short_sequence() {
+//         let matcher = element_sequence_matcher();
+//
+//         assert_eq!(matcher.parse("1. e4 c6 2. d4 d5 3. Nc3 dxe4").unwrap(),
+//                    ElementSequence {
+//                        members: vec![
+//
+//                        ]
+//                    }
+//         );
+//     }
+//
+//     #[test]
+//     fn test_short_sequence_with_newline() {
+//         let matcher = element_sequence_matcher();
+//
+//         // TODO: make a macro to make this feasible.
+//         assert_eq!(matcher.parse(r#"1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nf6 5. Bd3 Nbd7 6. Nxf6+ Nxf6 7. Bf4 e6 8.
+// c3 Bd6 9. Bxd6 Qxd6 "#).unwrap(),
+//                    ElementSequence {
+//                        members: vec![
+//
+//                        ]
+//                    }
+//         );
+//     }
 
     #[test]
     fn test_element_sequence_matcher() {

@@ -1,8 +1,12 @@
+use chumsky::prelude::Simple;
 use std::num::ParseIntError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum PgnError {
+    #[error("Errors: {0:?}")]
+    SimpleError(Vec<Simple<char>>),
+
     #[error("Bad number format while parsing {0}: {1}")]
     ParseIntError(&'static str, ParseIntError),
 
