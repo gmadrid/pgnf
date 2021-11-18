@@ -55,7 +55,7 @@ pub fn string_matcher() -> impl Parser<char, PgnStr, Error = Simple<char>> {
             if s.len() > 255 {
                 Err(Simple::custom(span, "Strings must have length <= 255."))
             } else {
-                Ok(PgnStr(s.to_string()))
+                Ok(PgnStr(s))
             }
         })
 }
