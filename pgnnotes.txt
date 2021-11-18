@@ -1,4 +1,4 @@
-Spec: http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm#c13.19
+Spec: http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
 
 Formal syntax:
 
