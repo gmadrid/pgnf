@@ -11,8 +11,8 @@ impl From<Ident> for String {
     }
 }
 
-fn is_printable(ch: &char) -> bool {
-    (0x20u32..=0x7e).contains(&From::from(*ch))
+fn is_printable(ch: char) -> bool {
+    (0x20u32..=0x7e).contains(&From::from(ch))
 }
 
 fn is_ident_character(ch: &char) -> bool {
@@ -45,8 +45,12 @@ pub fn escaped_char_matcher() -> impl Parser<char, char, Error = Simple<char>> {
     just('\\').or(just('"'))
 }
 
+fn is_valid_unescaped_string_char(c: char) -> bool {
+    c != '"' && c != '\\' && is_printable(c)
+}
+
 pub fn string_matcher() -> impl Parser<char, PgnStr, Error = Simple<char>> {
-    filter(|c| (*c != '"' && *c != '\\' && is_printable(c)))
+    filter(|c| is_valid_unescaped_string_char(*c))
         .or(just('\\').ignore_then(escaped_char_matcher()))
         .repeated()
         .delimited_by('"', '"')
